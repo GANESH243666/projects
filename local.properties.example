@@ -1,0 +1,5 @@
+# Copy this file to local.properties and set your provider key.
+# This file is never packaged into the APK.
+llm_api_key=replace-with-your-key
+llm_api_url=https://api.openai.com/v1/chat/completions
+llm_model=gpt-4o-mini
