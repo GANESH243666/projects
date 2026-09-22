@@ -55,5 +55,5 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.alphacephei:vosk-android:0.3.47")
     implementation("com.github.k2-fsa:sherpa-onnx:1.13.8")
-    implementation("com.github.k2-fsa:sherpa-onnx-jvm:1.13.8")
+    implementation("com.github.k2-fsa.sherpa-onnx:sherpa-onnx:v1.13.8")
 }
