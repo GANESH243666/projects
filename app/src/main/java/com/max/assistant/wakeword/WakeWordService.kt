@@ -1,8 +1,6 @@
 package com.max.assistant.wakeword
 
 import android.app.*
-        val command = CommandParser.parse(text)
-        when (command) {
 import android.media.*
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
