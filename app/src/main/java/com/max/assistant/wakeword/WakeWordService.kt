@@ -23,13 +23,14 @@ class WakeWordService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private lateinit var tts: PiperTts
     private lateinit var recognizer: VoskRecognizer
-    override fun onCreate() { super.onCreate(); tts = PiperTts(this); AssetInstaller.installModels(this); recognizer = VoskRecognizer(this); recognizer.load(); startForeground(9, notification()); listen() }
+    private lateinit var kws: KwsRecognizer
+    override fun onCreate() { super.onCreate(); tts = PiperTts(this); AssetInstaller.installModels(this); recognizer = VoskRecognizer(this); recognizer.load(); kws = KwsRecognizer(this); startForeground(9, notification()); listen() }
     private fun listen() { scope.launch {
         val recorder = AudioRecord(MediaRecorder.AudioSource.MIC, 16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, 3200)
         val buffer = ByteArray(3200); recorder.startRecording(); var awake = false
-        while (isActive) { val count = recorder.read(buffer, 0, buffer.size); if (count <= 0) continue; val phrase = recognizer.recognize(buffer).lowercase()
-            if (!awake && (phrase.contains("hey max") || phrase.contains("हे मैक्स"))) { awake = true; withContext(Dispatchers.Main) { tts.speak("जी, मैं सुन रहा हूँ") } }
-            else if (awake && phrase.isNotBlank()) { handle(phrase); awake = false }
+        while (isActive) { val count = recorder.read(buffer, 0, buffer.size); if (count <= 0) continue
+            if (!awake && kws.accept(buffer, count)) { awake = true; withContext(Dispatchers.Main) { tts.speak("जी, मैं सुन रहा हूँ") } }
+            else if (awake) { val phrase = recognizer.recognize(buffer).lowercase(); if (phrase.isNotBlank()) { handle(phrase); awake = false } }
         }
         recorder.stop(); recorder.release()
     } }
@@ -54,6 +55,6 @@ class WakeWordService : Service() {
         }
     }
     private fun notification(): Notification { val channel = "max_wake"; getSystemService(NotificationManager::class.java).createNotificationChannel(NotificationChannel(channel, "MAX wake word", NotificationManager.IMPORTANCE_LOW)); return NotificationCompat.Builder(this, channel).setSmallIcon(R.drawable.ic_stat_max).setContentTitle("MAX सक्रिय है").setContentText("Hey Max सुन रहा है").setOngoing(true).build() }
-    override fun onDestroy() { scope.cancel(); recognizer.close(); tts.shutdown(); super.onDestroy() }
+    override fun onDestroy() { scope.cancel(); recognizer.close(); kws.close(); tts.shutdown(); super.onDestroy() }
     override fun onBind(intent: Intent?): IBinder? = null
 }
