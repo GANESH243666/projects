@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 class MaxAgentLoop(
     context: Context,
-    confirmationGateway: VoiceConfirmationGateway = VoiceConfirmationGateway()
+    private val confirmationGateway: VoiceConfirmationGateway = VoiceConfirmationGateway()
 ) {
     private val appContext = context.applicationContext
     private val tools = AgentToolRegistry(BuiltInAgentTools(appContext).all())
