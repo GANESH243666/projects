@@ -7,6 +7,12 @@ object AssetInstaller {
     fun installModels(context: Context) {
         val root = File(context.filesDir, "models").apply { mkdirs() }
         context.assets.list("models").orEmpty().filter { it.startsWith("vosk-model-") }.forEach { model -> copyTree(context, "models/$model", File(root, model)) }
+        installPiper(context)
+    }
+
+    fun installPiper(context: Context) {
+        val piperRoot = File(context.filesDir, "piper").apply { mkdirs() }
+        context.assets.list("piper").orEmpty().filter { !it.equals("README.md", ignoreCase = true) }.forEach { asset -> copyTree(context, "piper/$asset", File(piperRoot, asset)) }
     }
     private fun copyTree(context: Context, assetPath: String, destination: File) {
         if (destination.exists()) return

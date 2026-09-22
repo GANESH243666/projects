@@ -1,7 +1,8 @@
 package com.max.assistant.wakeword
 
 import android.app.*
-import android.content.Intent
+        val command = CommandParser.parse(text)
+        when (command) {
 import android.media.*
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
@@ -18,6 +19,8 @@ import com.max.assistant.control.MaxAccessibilityService
 import com.max.assistant.control.PhoneControl
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.*
+import com.max.assistant.overlay.MaxOverlayProtocol
+import com.max.assistant.overlay.MaxOverlayService
 
 class WakeWordService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -29,8 +32,18 @@ class WakeWordService : Service() {
         val recorder = AudioRecord(MediaRecorder.AudioSource.MIC, 16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, 3200)
         val buffer = ByteArray(3200); recorder.startRecording(); var awake = false
         while (isActive) { val count = recorder.read(buffer, 0, buffer.size); if (count <= 0) continue
-            if (!awake && kws.accept(buffer, count)) { awake = true; withContext(Dispatchers.Main) { tts.speak("जी, मैं सुन रहा हूँ") } }
-            else if (awake) { val phrase = recognizer.recognize(buffer).lowercase(); if (phrase.isNotBlank()) { handle(phrase); awake = false } }
+            if (!awake && kws.accept(buffer, count)) {
+                awake = true
+                MaxOverlayService.emit(this@WakeWordService, MaxOverlayProtocol.State.LISTENING)
+                withContext(Dispatchers.Main) { tts.speak("जी, मैं सुन रहा हूँ") }
+            } else if (awake) {
+                val phrase = recognizer.recognize(buffer).lowercase()
+                if (phrase.isNotBlank()) {
+                    MaxOverlayService.emit(this@WakeWordService, MaxOverlayProtocol.State.THINKING, command = phrase)
+                    handle(phrase)
+                    awake = false
+                }
+            }
         }
         recorder.stop(); recorder.release()
     } }
@@ -45,14 +58,20 @@ class WakeWordService : Service() {
             MaxCommand.ReadScreen -> {
                 val screen = MaxAccessibilityService.instance?.readScreen().orEmpty()
                 val result = BrainRouter(this).ask("Describe this screen in Hindi: $screen")
+                MaxOverlayService.emit(this, MaxOverlayProtocol.State.SPEAKING, reply = result.first)
                 withContext(Dispatchers.Main) { tts.speak(result.first) }
             }
             is MaxCommand.Ask -> {
                 val result = BrainRouter(this).ask(command.text)
+                MaxOverlayService.emit(this, MaxOverlayProtocol.State.SPEAKING, reply = result.first)
                 withContext(Dispatchers.Main) { tts.speak("${result.second}: ${result.first}") }
             }
             else -> Unit
         }
+        if (command != null && command !is MaxCommand.Ask && command !is MaxCommand.ReadScreen) {
+            BrainRouter(this).saveTurn(text, "Command completed")
+        }
+        MaxOverlayService.emit(this, MaxOverlayProtocol.State.DONE)
     }
     private fun notification(): Notification { val channel = "max_wake"; getSystemService(NotificationManager::class.java).createNotificationChannel(NotificationChannel(channel, "MAX wake word", NotificationManager.IMPORTANCE_LOW)); return NotificationCompat.Builder(this, channel).setSmallIcon(R.drawable.ic_stat_max).setContentTitle("MAX सक्रिय है").setContentText("Hey Max सुन रहा है").setOngoing(true).build() }
     override fun onDestroy() { scope.cancel(); recognizer.close(); kws.close(); tts.shutdown(); super.onDestroy() }

@@ -57,9 +57,11 @@ class BrainRouter(context: Context) {
     private val offline = OfflineBrain(context)
     private val memory = MemoryStore(context)
     suspend fun ask(prompt: String): Pair<String, String> {
-        val contextText = memory.context()
-        return if (network.online() && BuildConfig.LLM_API_KEY.isNotBlank()) runCatching { online.ask(prompt, contextText) }.map { it to "online" }.getOrElse { offline.ask(prompt, contextText) to "offline" }
+        val contextText = memory.contextFor(prompt)
+        val result = if (network.online() && BuildConfig.LLM_API_KEY.isNotBlank()) runCatching { online.ask(prompt, contextText) }.map { it to "online" }.getOrElse { offline.ask(prompt, contextText) to "offline" }
         else offline.ask(prompt, contextText) to "offline"
+        memory.saveTurn(prompt, result.first)
+        return result
     }
-    suspend fun save(text: String) = memory.remember(text)
+    suspend fun saveTurn(prompt: String, reply: String) = memory.saveTurn(prompt, reply)
 }

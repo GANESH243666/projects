@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-feature android:name="android.hardware.microphone" android:required="false" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <application android:theme="@style/Theme.Max" android:label="MAX" android:allowBackup="false" android:supportsRtl="true">
@@ -18,7 +19,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".memory.MemoryActivity" android:exported="false" />
         <service android:name=".wakeword.WakeWordService" android:exported="false" android:foregroundServiceType="microphone" />
+        <service android:name=".overlay.MaxOverlayService" android:exported="false" />
         <service android:name=".calls.MaxCallScreeningService" android:permission="android.permission.BIND_SCREENING_SERVICE" android:exported="true">
             <intent-filter><action android:name="android.telecom.CallScreeningService" /></intent-filter>
         </service>

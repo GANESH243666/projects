@@ -34,6 +34,10 @@ android {
         buildConfigField("String", "LLM_API_KEY", "\"${localProperties.getProperty("llm_api_key", "")}\"")
         buildConfigField("String", "LLM_API_URL", "\"${localProperties.getProperty("llm_api_url", "https://api.openai.com/v1/chat/completions")}\"")
         buildConfigField("String", "LLM_MODEL", "\"${localProperties.getProperty("llm_model", "gpt-4o-mini")}\"")
+        buildConfigField("String", "CLOUD_TTS_API_KEY", "\"${localProperties.getProperty("cloud_tts_api_key", "")}\"")
+        buildConfigField("String", "CLOUD_TTS_API_URL", "\"${localProperties.getProperty("cloud_tts_api_url", "https://api.openai.com/v1/audio/speech")}\"")
+        buildConfigField("String", "CLOUD_TTS_MODEL", "\"${localProperties.getProperty("cloud_tts_model", "gpt-4o-mini-tts")}\"")
+        buildConfigField("String", "CLOUD_TTS_VOICE", "\"${localProperties.getProperty("cloud_tts_voice", "alloy")}\"")
     }
 }
 
@@ -44,6 +48,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
+    implementation("net.zetetic:android-database-sqlcipher:4.5.4")
+    implementation("androidx.sqlite:sqlite-ktx:2.4.0")
     ksp("androidx.room:room-compiler:2.6.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")

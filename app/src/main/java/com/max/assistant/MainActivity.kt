@@ -12,6 +12,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.max.assistant.wakeword.WakeWordService
+import com.max.assistant.memory.MemoryActivity
 
 class MainActivity : Activity() {
     private val permissions = arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA, Manifest.permission.READ_PHONE_STATE, Manifest.permission.ANSWER_PHONE_CALLS, Manifest.permission.SEND_SMS, Manifest.permission.POST_NOTIFICATIONS)
@@ -26,6 +27,7 @@ class MainActivity : Activity() {
         add(root, "Accessibility खोलें", { startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) })
         add(root, "Battery optimization exemption", { startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:$packageName"))) })
         add(root, "Call screening चुनें", { startActivity(Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)) })
+        add(root, "Memory और voice settings", { startActivity(Intent(this, MemoryActivity::class.java)) })
         setContentView(root)
         if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) == 0 && (android.os.Build.VERSION.SDK_INT < 33 || checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == 0)) ContextCompat.startForegroundService(this, Intent(this, WakeWordService::class.java))
     }
